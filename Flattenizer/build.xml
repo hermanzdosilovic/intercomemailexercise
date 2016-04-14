@@ -1,0 +1,137 @@
+<project name="flattenizer" default="jar" basedir=".">
+
+	<description>
+		Build file for project IntercomEmailExercise.
+	</description>
+
+	<!-- Global variables -->
+	<property file="config.properties" />
+	<property name="src" location="src" />
+	<property name="lib" location="lib" />
+	<property name="src.java" location="${src}/main/" />
+	<property name="src.test" location="${src}/test/" />
+	<property name="build" location="build" />
+	<property name="build.classes" location="${build}/classes" />
+	<property name="build.test" location="${build}/test" />
+	<property name="dist" location="dist" />
+	<property name="doc" location="doc" />
+
+	<path id="compile.path">
+		<pathelement location="${build.classes}" />
+		<fileset dir="${lib}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="test.path">
+		<path refid="compile.path" />
+		<pathelement location="${build.test}" />
+		<fileset dir="${lib}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+
+	<!-- *********************** INIT ******************************** -->
+	<target name="init">
+		<!-- Time stamp -->
+		<tstamp />
+		<!-- Create the necessary directories -->
+		<mkdir dir="${build}" />
+		<mkdir dir="${dist}" />
+	</target>
+
+
+	<!-- *********************** COMPILE ***************************** -->
+	<target name="compile" depends="init" description="Compiling sources">
+		<mkdir dir="${build.classes}" />
+		<!-- Translate Java code from ${src} in ${build} -->
+		<javac srcdir="${src.java}" destdir="${build.classes}" encoding="UTF-8"
+			debug="on" debuglevel="lines,vars,source" includeAntRuntime="false">
+			<classpath>
+				<fileset dir="${lib}" includes="**/*.jar" />
+			</classpath>
+		</javac>
+
+	</target>
+
+
+	<!-- *********************** COMPILE TESTS *********************** -->
+	<target name="compile-tests" depends="compile" description="Compiling tests">
+		<mkdir dir="${build.test}" />
+		<!-- Translate Java code from ${src} in ${build} -->
+		<javac srcdir="${src.test}" destdir="${build.test}"
+			classpathref="test.path" encoding="UTF-8" debug="on" debuglevel="lines,vars,source"
+			includeAntRuntime="false" />
+	</target>
+
+
+	<!-- *********************** RUN TESTS *************************** -->
+	<target name="run-tests" depends="compile-tests" description="Run tests">
+		<junit printsummary="yes" haltonfailure="yes" fork="true" forkmode="once">
+			<classpath refid="test.path" />
+			<batchtest fork="yes">
+				<fileset dir="${src.test}">
+					<include name="**/*Test*.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+
+	<!-- *********************** JAR ********************************* -->
+	<target name="jar" depends="compile" description="Pack program in archive JAR">
+		<!-- Make distribution directory -->
+		<mkdir dir="${dist}" />
+
+		<!-- Archive all -->
+		<jar jarfile="${dist}/${ant.project.name}.jar">
+			<fileset dir="${build.classes}" />
+			<fileset dir="${src.java}" />
+			<zipgroupfileset dir="${lib}" includes="*.jar" />
+			<manifest>
+				<attribute name="Main-Class" value="${program}" />
+			</manifest>
+		</jar>
+
+		<!-- Archive binary for all -->
+		<jar jarfile="${dist}/${ant.project.name}-bin.jar">
+			<fileset dir="${build.classes}" />
+			<zipgroupfileset dir="${lib}" includes="*.jar" />
+			<manifest>
+				<attribute name="Main-Class" value="${program}" />
+			</manifest>
+		</jar>
+
+		<!-- Archive source for all -->
+		<jar jarfile="${dist}/${ant.project.name}-src.jar">
+			<fileset dir="${src.java}" />
+			<zipgroupfileset dir="${lib}" includes="*.jar" />
+			<manifest>
+				<attribute name="Main-Class" value="${program}" />
+			</manifest>
+		</jar>
+
+	</target>
+
+	<!-- *********************** CLEAN ******************************* -->
+	<target name="clean" description="Delete generated folders">
+		<!-- Delete directories ${build} and ${dist} -->
+		<delete dir="${build}" failonerror="false" />
+		<delete dir="${dist}" failonerror="false" />
+		<delete dir="${doc}" failonerror="false" />
+	</target>
+
+	<!-- *********************** JAVADOC ***************************** -->
+	<target name="javadoc" depends="compile" description="Generating documentation">
+		<!-- Make distribution directory -->
+		<mkdir dir="${doc}" />
+		<javadoc packagenames="*" sourcepath="${src.java}"
+			defaultexcludes="yes" destdir="${doc}" Encoding="UTF-8" docencoding="UTF-8"
+			charset="UTF-8" author="true" version="true" use="true"
+			windowtitle="Prime Artist documentation">
+			<doctitle><![CDATA[<h1>Prime Artist</h1>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright &#169; 2014 ACME. All Rights Reserved.</i>]]></bottom>
+		</javadoc>
+	</target>
+</project>
